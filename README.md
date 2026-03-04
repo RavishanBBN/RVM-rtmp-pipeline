@@ -111,37 +111,6 @@ ffplay "rtmp://127.0.0.1/live/H1cKHxHYbe_out"
 - `no frame!` / `Invalid data found when processing input`: run the ffmpeg sanitizer stage and use `_clean` stream as input.
 - If input reports absurd FPS (for example `1000/1`), script falls back to safe 30 FPS internally.
 
-## Create Release (GitHub)
-
-Yes, you can create a release.
-
-This environment does not have `gh` CLI installed, so use plain Git + GitHub web UI.
-
-1. Point remote to your new repo:
-
-```bash
-git remote set-url origin https://github.com/RavishanBBN/RVM-rtmp-pipeline.git
-```
-
-2. Commit and push:
-
-```bash
-git add README.md rtmp_avatar_stream.py run_rtmp_black_pipeline.sh requirements_inference.txt
-git commit -m "Add RTMP avatar pipeline and docs"
-git push -u origin main
-```
-
-3. Create a version tag and push it:
-
-```bash
-git tag -a v0.1.0 -m "Initial RTMP avatar pipeline release"
-git push origin v0.1.0
-```
-
-4. Open GitHub repo page and create release from tag `v0.1.0`.
-
-Suggested release title: `v0.1.0 - Initial RTMP Avatar Pipeline`
-
 ## Credits
 
 This project builds on the original Robust Video Matting repository and model weights:
@@ -151,4 +120,4 @@ This project builds on the original Robust Video Matting repository and model we
 
 ## License
 
-GPL-3.0 (same as upstream repository license unless you explicitly relicense where legally valid).
+GPL-3.0.

@@ -2,26 +2,26 @@
 set -euo pipefail
 
 # Single-file pipeline:
-#   RTMP input -> ffmpeg sanitizer -> RVM black avatar relay -> optional ffplay viewer
+#   RTMP input -> ffmpeg sanitizer -> RVM black avatar relay -> MediaMTX RTMP publish
 #
 # Usage:
 #   bash run_rtmp_black_pipeline.sh
-#   INPUT_RTMP="rtmp://127.0.0.1/live/H1cKHxHYbe" bash run_rtmp_black_pipeline.sh
-#   INPUT_RTMP="..." OUTPUT_RTMP="rtmp://127.0.0.1/live/H1cKHxHYbe_out" VIEW_OUTPUT=0 bash run_rtmp_black_pipeline.sh
+#   INPUT_RTMP="rtmp://127.0.0.1/live/rkPjEVHtbx" bash run_rtmp_black_pipeline.sh
+#   INPUT_RTMP="..." OUTPUT_RTMP="rtmp://127.0.0.1:1935/rvm" VIEW_OUTPUT=0 bash run_rtmp_black_pipeline.sh
 
 ROOT_DIR="/Users/nbal0029/Desktop/Hattan/RVM/RobustVideoMatting"
 VENV_PATH="$ROOT_DIR/.venv"
 CHECKPOINT_PATH="$ROOT_DIR/rvm_mobilenetv3.pth"
 
-INPUT_RTMP="${INPUT_RTMP:-rtmp://127.0.0.1/live/H1cKHxHYbe}"
-CLEAN_RTMP="${CLEAN_RTMP:-rtmp://127.0.0.1/live/H1cKHxHYbe_clean}"
-OUTPUT_RTMP="${OUTPUT_RTMP:-rtmp://127.0.0.1/live/H1cKHxHYbe_out}"
+INPUT_RTMP="${INPUT_RTMP:-rtmp://127.0.0.1/live/rkPjEVHtbx}"
+CLEAN_RTMP="${CLEAN_RTMP:-rtmp://127.0.0.1/live/rkPjEVHtbx_clean}"
+OUTPUT_RTMP="${OUTPUT_RTMP:-rtmp://127.0.0.1:1935/rvm}"
 
 DEVICE="${DEVICE:-mps}"
 INPUT_RESIZE_W="${INPUT_RESIZE_W:-1280}"
 INPUT_RESIZE_H="${INPUT_RESIZE_H:-720}"
 DOWNSAMPLE_RATIO="${DOWNSAMPLE_RATIO:-0.25}"
-VIEW_OUTPUT="${VIEW_OUTPUT:-1}"  # 1 to auto-open ffplay, 0 to disable
+VIEW_OUTPUT="${VIEW_OUTPUT:-0}"  # 1 to auto-open ffplay, 0 to disable
 
 cleanup() {
   if [[ -n "${SANITIZER_PID:-}" ]] && kill -0 "$SANITIZER_PID" >/dev/null 2>&1; then
@@ -77,6 +77,7 @@ python rtmp_avatar_stream.py \
   --output-rtmp "$OUTPUT_RTMP" \
   --mode black \
   --silhouette-color 0 0 0 \
-  --background-color 255 255 255 \
+  --background-color 0 255 0 \
+  --hard-mask-threshold 0.5 \
   --input-resize "$INPUT_RESIZE_W" "$INPUT_RESIZE_H" \
   --downsample-ratio "$DOWNSAMPLE_RATIO"

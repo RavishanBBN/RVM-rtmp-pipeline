@@ -33,6 +33,12 @@ def parse_args():
                         help="RGB color used for non-person background, e.g. 255 255 255")
     parser.add_argument("--silhouette-color", type=int, nargs=3, default=[0, 0, 0],
                         help="RGB color used for black avatar mode, e.g. 0 0 0")
+    parser.add_argument(
+        "--hard-mask-threshold",
+        type=float,
+        default=None,
+        help="Optional threshold in [0,1]. If set, alpha is binarized for strict foreground/background separation.",
+    )
     parser.add_argument("--downsample-ratio", type=float, default=None)
     parser.add_argument("--input-resize", type=int, nargs=2, default=None,
                         help="Optional resize in W H. Output stream follows this size.")
@@ -110,6 +116,8 @@ def resolve_stream_rate(input_stream) -> Fraction:
 def stream_avatar(args):
     if args.mode == "emoji" and not args.emoji_path:
         raise ValueError("--emoji-path is required when --mode emoji")
+    if args.hard_mask_threshold is not None and not (0.0 <= args.hard_mask_threshold <= 1.0):
+        raise ValueError("--hard-mask-threshold must be within [0, 1]")
 
     device = torch.device(args.device)
     dtype = torch.float16 if (args.fp16 and device.type == "cuda") else torch.float32
@@ -182,6 +190,8 @@ def stream_avatar(args):
 
         with torch.no_grad():
             fgr, pha, *rec = model(src, *rec, ds_ratio)
+        if args.hard_mask_threshold is not None:
+            pha = (pha >= args.hard_mask_threshold).to(dtype=dtype)
 
         if args.mode == "black":
             person = silhouette_rgb.expand_as(fgr)

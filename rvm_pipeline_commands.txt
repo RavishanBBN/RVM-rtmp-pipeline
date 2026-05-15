@@ -1,0 +1,114 @@
+1. Start MediaMTX
+
+cd C:\Users\USER\Downloads\mediamtx_v1.18.1_windows_amd64
+.\mediamtx.exe
+
+
+2. Start raw republisher
+
+while ($true) {
+  ffmpeg -fflags +genpts+discardcorrupt -err_detect ignore_err -rtmp_live live `
+    -use_wallclock_as_timestamps 1 `
+    -i rtmp://127.0.0.1/live/drone `
+    -map 0:v:0 -an `
+    -c:v libx264 -preset ultrafast -tune zerolatency `
+    -profile:v baseline -bf 0 `
+    -g 20 -keyint_min 20 -sc_threshold 0 `
+    -pix_fmt yuv420p `
+    -f flv rtmp://127.0.0.1:1936/drone_raw
+
+  Write-Host "raw republisher exited, restarting in 2 seconds..."
+  Start-Sleep -Seconds 2
+}
+
+
+3. Run RVM relay
+
+cd C:\Users\USER\Desktop\Hattan\RVM-rtmp-pipeline
+.\.venv\Scripts\python.exe .\rtmp_avatar_stream.py `
+  --variant mobilenetv3 `
+  --checkpoint .\rvm_mobilenetv3.pth `
+  --device auto `
+  --input-rtmp rtmp://127.0.0.1:1936/drone_raw `
+  --output-rtmp rtmp://127.0.0.1:1936/rvm `
+  --mode black `
+  --silhouette-color 0 0 0 `
+  --background-color 255 255 255 `
+  --input-resize 640 360 `
+  --input-fps 10 `
+  --input-queue-size 1 `
+  --frame-timeout-seconds 8 `
+  --downsample-ratio 0.2 `
+  --bitrate-mbps 1 `
+  --process-every-nth-frame 1 `
+  --reconnect-delay-seconds 2
+
+
+If the Wi-Fi router changes
+
+- The local RTMP commands stay the same.
+- The Quest/Unity WHEP URL may change because your PC IP may change.
+
+Find the new PC IP:
+
+ipconfig
+
+Look for the active Wi-Fi adapter IPv4 Address.
+
+Then update the Quest/Unity URL from:
+
+http://192.168.1.7:8889/rvm/whep
+
+to:
+
+http://NEW_IP:8889/rvm/whep
+
+Also update MediaMTX config:
+
+webrtcAdditionalHosts: [127.0.0.1, NEW_IP]
+
+Then restart MediaMTX.
+
+Quest browser quick test:
+
+http://NEW_IP:8889/rvm
+
+
+If you want to change colors
+
+The RVM relay command uses:
+
+--silhouette-color R G B
+--background-color R G B
+
+Current values:
+
+--silhouette-color 0 0 0
+--background-color 255 255 255
+
+Examples:
+
+Black silhouette:
+--silhouette-color 0 0 0
+
+White silhouette:
+--silhouette-color 255 255 255
+
+Red silhouette:
+--silhouette-color 255 0 0
+
+Green background:
+--background-color 0 255 0
+
+Blue background:
+--background-color 0 0 255
+
+Gray background:
+--background-color 128 128 128
+
+Notes:
+
+- Values are RGB, each from 0 to 255.
+- Change the values in the RVM relay command, then restart the relay.
+- Background color is the non-person area.
+- Silhouette color is the person color in black mode.

@@ -1,3 +1,10 @@
+Normal VR RAW/RVM switching setup
+
+Run these three commands in three separate PowerShell windows.
+Keep all three running while using the Unity app.
+Open the Unity menu and switch between RAW and RVM using the Stream: RAW / Stream: RVM menu rows.
+
+
 1. Start MediaMTX
 
 cd C:\Users\USER\Downloads\mediamtx_v1.18.1_windows_amd64
@@ -22,7 +29,7 @@ while ($true) {
 }
 
 
-3. Run RVM relay
+3. Run RVM relay for masked-person view
 
 cd C:\Users\USER\Desktop\Hattan\RVM-rtmp-pipeline
 .\.venv\Scripts\python.exe .\rtmp_avatar_stream.py `
@@ -44,10 +51,115 @@ cd C:\Users\USER\Desktop\Hattan\RVM-rtmp-pipeline
   --reconnect-delay-seconds 2
 
 
+3b. Run segmented real-person relay (person preserved, background replaced)
+
+cd C:\Users\USER\Desktop\Hattan\RVM-rtmp-pipeline
+.\.venv\Scripts\python.exe .\rtmp_avatar_stream.py `
+  --variant mobilenetv3 `
+  --checkpoint .\rvm_mobilenetv3.pth `
+  --device auto `
+  --input-rtmp rtmp://127.0.0.1:1936/drone_raw `
+  --output-rtmp rtmp://127.0.0.1:1936/rvm `
+  --mode foreground `
+  --background-color 255 255 255 `
+  --input-resize 640 360 `
+  --input-fps 10 `
+  --input-queue-size 1 `
+  --frame-timeout-seconds 8 `
+  --downsample-ratio 0.2 `
+  --bitrate-mbps 1 `
+  --process-every-nth-frame 1 `
+  --reconnect-delay-seconds 2
+
+
+3c. Run real-background relay (background preserved, person becomes silhouette)
+
+cd C:\Users\USER\Desktop\Hattan\RVM-rtmp-pipeline
+.\.venv\Scripts\python.exe .\rtmp_avatar_stream.py `
+  --variant mobilenetv3 `
+  --checkpoint .\rvm_mobilenetv3.pth `
+  --device auto `
+  --input-rtmp rtmp://127.0.0.1:1936/drone_raw `
+  --output-rtmp rtmp://127.0.0.1:1936/rvm `
+  --mode background `
+  --silhouette-color 0 0 0 `
+  --input-resize 640 360 `
+  --input-fps 10 `
+  --input-queue-size 1 `
+  --frame-timeout-seconds 8 `
+  --downsample-ratio 0.2 `
+  --bitrate-mbps 1 `
+  --process-every-nth-frame 1 `
+  --reconnect-delay-seconds 2
+
+Notes for modes:
+
+- --mode black
+  person becomes a solid silhouette color
+  background uses --background-color
+
+- --mode foreground
+  person keeps the real RGB appearance
+  background uses --background-color
+
+- --mode background
+  background keeps the real RGB appearance
+  person uses --silhouette-color
+
+- --mode emoji
+  person area is filled with the emoji pattern
+  background uses --background-color
+
+
+Unity menu RAW/RVM switching
+
+The Unity menu now has Stream: RAW and Stream: RVM rows.
+
+For normal testing, keep all three commands running:
+
+1. Start MediaMTX
+2. Start raw republisher
+3. Run one RVM relay mode
+
+Then open the Unity menu and select:
+
+- Stream: RAW uses:
+  http://192.168.1.7:8889/drone_raw/whep
+
+- Stream: RVM uses:
+  http://192.168.1.7:8889/rvm/whep
+
+You do not need to rebuild Unity or stop/restart commands just to switch RAW/RVM.
+
+
+If you want RAW only
+
+Do not run the RVM relay command.
+
+Only run these two:
+
+1. Start MediaMTX
+2. Start raw republisher
+
+
+PC viewers
+
+ffplay -fflags nobuffer -flags low_delay -framedrop -sync ext rtmp://127.0.0.1:1936/drone_raw
+
+ffplay -fflags nobuffer -flags low_delay -framedrop -sync ext rtmp://127.0.0.1:1936/rvm
+
+Browser links on PC:
+
+http://127.0.0.1:8889/drone_raw/
+
+http://127.0.0.1:8889/rvm/
+
+
 If the Wi-Fi router changes
 
-- The local RTMP commands stay the same.
-- The Quest/Unity WHEP URL may change because your PC IP may change.
+The local RTMP commands stay the same.
+
+The Quest/Unity WHEP URLs may change because your PC IP may change.
 
 Find the new PC IP:
 
@@ -55,23 +167,28 @@ ipconfig
 
 Look for the active Wi-Fi adapter IPv4 Address.
 
-Then update the Quest/Unity URL from:
+Then update these fields in WebRtcVideoReceiver:
 
-http://192.168.1.7:8889/rvm/whep
+rawWhepUrl:
+http://NEW_IP:8889/drone_raw/whep
 
-to:
-
+rvmWhepUrl:
 http://NEW_IP:8889/rvm/whep
 
-Also update MediaMTX config:
+whepUrl:
+http://NEW_IP:8889/rvm/whep
+
+Also update MediaMTX config if needed:
 
 webrtcAdditionalHosts: [127.0.0.1, NEW_IP]
 
 Then restart MediaMTX.
 
-Quest browser quick test:
+Quest browser quick tests:
 
-http://NEW_IP:8889/rvm
+http://NEW_IP:8889/drone_raw/
+
+http://NEW_IP:8889/rvm/
 
 
 If you want to change colors
@@ -110,5 +227,5 @@ Notes:
 
 - Values are RGB, each from 0 to 255.
 - Change the values in the RVM relay command, then restart the relay.
-- Background color is the non-person area.
-- Silhouette color is the person color in black mode.
+- Background color is the non-person area in black and foreground modes.
+- Silhouette color is the person color in black and background modes.

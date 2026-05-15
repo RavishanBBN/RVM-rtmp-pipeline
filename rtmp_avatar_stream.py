@@ -2,7 +2,7 @@
 Real-time RTMP avatar streaming with Robust Video Matting (RVM).
 
 Pipeline:
-RTMP input -> RVM alpha matte -> avatar render (black or emoji) -> RTMP output
+RTMP input -> RVM alpha matte -> avatar render -> RTMP output
 """
 
 import argparse
@@ -31,7 +31,7 @@ def parse_args():
     parser.add_argument("--device", type=str, default="auto")
     parser.add_argument("--input-rtmp", type=str, required=True)
     parser.add_argument("--output-rtmp", type=str, required=True)
-    parser.add_argument("--mode", type=str, default="black", choices=["black", "emoji", "passthrough"])
+    parser.add_argument("--mode", type=str, default="black", choices=["black", "foreground", "background", "emoji", "passthrough"])
     parser.add_argument("--emoji-path", type=str, default=None)
     parser.add_argument("--emoji-tile-size", type=int, default=128)
     parser.add_argument("--background-color", type=int, nargs=3, default=[255, 255, 255],
@@ -370,8 +370,16 @@ def stream_avatar_session(args, model, device, dtype, background_rgb, silhouette
             if args.hard_mask_threshold is not None:
                 pha = (pha >= args.hard_mask_threshold).to(dtype=dtype)
 
-            if args.mode == "black":
+            if args.mode == "foreground":
+                # Real person, replaced background.
+                composed = fgr * pha + background_rgb * (1 - pha)
+            elif args.mode == "background":
+                # Replaced person, real background.
+                silhouette = silhouette_rgb.expand_as(fgr)
+                composed = silhouette * pha + src * (1 - pha)
+            elif args.mode == "black":
                 person = silhouette_rgb.expand_as(fgr)
+                composed = person * pha + background_rgb * (1 - pha)
             else:
                 person = build_emoji_fill(
                     emoji_rgba=emoji_rgba,
@@ -380,8 +388,7 @@ def stream_avatar_session(args, model, device, dtype, background_rgb, silhouette
                     tile_size=args.emoji_tile_size,
                     fallback_rgb=silhouette_rgb,
                 )
-
-            composed = person * pha + background_rgb * (1 - pha)
+                composed = person * pha + background_rgb * (1 - pha)
 
         out_frame = tensor_to_rgb_ndarray(composed[0])
         try:

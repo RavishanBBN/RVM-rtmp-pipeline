@@ -113,7 +113,8 @@ Notes for modes:
 
 Unity menu RAW/RVM switching
 
-The Unity menu now has Stream: RAW and Stream: RVM rows.
+The Unity menu has Stream: RAW and Stream: RVM rows.
+It also has Delay and Slow Motion controls.
 
 For normal testing, keep all three commands running:
 
@@ -130,6 +131,21 @@ Then open the Unity menu and select:
   http://192.168.1.7:8889/rvm/whep
 
 You do not need to rebuild Unity or stop/restart commands just to switch RAW/RVM.
+
+Delay controls in Unity:
+
+- Delay row toggles delayed playback on/off.
+- 3s, 5s, and 10s chips set the delay preset and turn delay on.
+- Delay and Slow Motion are mutually exclusive.
+
+Slow Motion controls in Unity:
+
+- Slow Motion row toggles slow playback on/off.
+- 0.25x, 0.5x, and 0.75x chips choose the playback speed.
+- Slow Motion starts from the buffered history and plays it back at the selected speed.
+- Delay and Slow Motion are mutually exclusive.
+
+No extra PowerShell commands are needed for Delay or Slow Motion. They use the Unity playback buffer.
 
 
 If you want RAW only

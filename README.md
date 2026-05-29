@@ -55,8 +55,8 @@ bash run_rtmp_black_pipeline.sh
 Custom URLs:
 
 ```bash
-INPUT_RTMP="rtmp://127.0.0.1/live/H1cKHxHYbe" \
-OUTPUT_RTMP="rtmp://127.0.0.1/live/H1cKHxHYbe_out" \
+INPUT_RTMP="rtmp://127.0.0.1:1935/live/S1DEroIeze" \
+OUTPUT_RTMP="rtmp://127.0.0.1:1936/rvm" \
 bash run_rtmp_black_pipeline.sh
 ```
 
@@ -67,24 +67,24 @@ bash run_rtmp_black_pipeline.sh
 ```bash
 ffmpeg -fflags +genpts+discardcorrupt -err_detect ignore_err \
   -use_wallclock_as_timestamps 1 \
-  -i "rtmp://127.0.0.1/live/H1cKHxHYbe" \
+  -i "rtmp://127.0.0.1:1935/live/S1DEroIeze" \
   -an \
   -c:v libx264 -preset veryfast -tune zerolatency \
   -r 30 -g 60 -keyint_min 60 -sc_threshold 0 \
   -pix_fmt yuv420p \
-  -f flv "rtmp://127.0.0.1/live/H1cKHxHYbe_clean"
+  -f flv "rtmp://127.0.0.1:1936/drone_raw"
 ```
 
 ### 2) Run avatar relay
 
 ```bash
 source .venv/bin/activate
-python rtmp_avatar_stream.py \
+python3 rtmp_avatar_stream.py \
   --variant mobilenetv3 \
   --checkpoint rvm_mobilenetv3.pth \
   --device mps \
-  --input-rtmp "rtmp://127.0.0.1/live/H1cKHxHYbe_clean" \
-  --output-rtmp "rtmp://127.0.0.1/live/H1cKHxHYbe_out" \
+  --input-rtmp "rtmp://127.0.0.1:1936/drone_raw" \
+  --output-rtmp "rtmp://127.0.0.1:1936/rvm" \
   --mode black \
   --silhouette-color 0 0 0 \
   --background-color 255 255 255 \
@@ -95,7 +95,7 @@ python rtmp_avatar_stream.py \
 ### 3) View output
 
 ```bash
-ffplay "rtmp://127.0.0.1/live/H1cKHxHYbe_out"
+ffplay "rtmp://127.0.0.1:1936/rvm"
 ```
 
 ## Device Notes

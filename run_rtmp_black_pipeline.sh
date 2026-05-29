@@ -6,16 +6,17 @@ set -euo pipefail
 #
 # Usage:
 #   bash run_rtmp_black_pipeline.sh
-#   INPUT_RTMP="rtmp://127.0.0.1/live/rkPjEVHtbx" bash run_rtmp_black_pipeline.sh
-#   INPUT_RTMP="..." OUTPUT_RTMP="rtmp://127.0.0.1:1935/rvm" VIEW_OUTPUT=0 bash run_rtmp_black_pipeline.sh
+#   INPUT_RTMP="rtmp://127.0.0.1:1935/live/S1DEroIeze" bash run_rtmp_black_pipeline.sh
+#   INPUT_RTMP="..." OUTPUT_RTMP="rtmp://127.0.0.1:1936/rvm" VIEW_OUTPUT=0 bash run_rtmp_black_pipeline.sh
 
-ROOT_DIR="/Users/nbal0029/Desktop/Hattan/RVM/RobustVideoMatting"
+ROOT_DIR="/Users/homr0001/Documents/DroneProject/RVM-rtmp-pipeline"
 VENV_PATH="$ROOT_DIR/.venv"
 CHECKPOINT_PATH="$ROOT_DIR/rvm_mobilenetv3.pth"
 
-INPUT_RTMP="${INPUT_RTMP:-rtmp://127.0.0.1/live/rkPjEVHtbx}"
-CLEAN_RTMP="${CLEAN_RTMP:-rtmp://127.0.0.1/live/rkPjEVHtbx_clean}"
-OUTPUT_RTMP="${OUTPUT_RTMP:-rtmp://127.0.0.1:1935/rvm}"
+STREAM_KEY="${STREAM_KEY:-S1DEroIeze}"
+INPUT_RTMP="${INPUT_RTMP:-rtmp://127.0.0.1:1935/live/${STREAM_KEY}}"
+CLEAN_RTMP="${CLEAN_RTMP:-rtmp://127.0.0.1:1935/live/${STREAM_KEY}_clean}"
+OUTPUT_RTMP="${OUTPUT_RTMP:-rtmp://127.0.0.1:1936/rvm}"
 
 DEVICE="${DEVICE:-mps}"
 INPUT_RESIZE_W="${INPUT_RESIZE_W:-1280}"
@@ -69,7 +70,7 @@ if [[ "$VIEW_OUTPUT" == "1" ]]; then
 fi
 
 echo "Starting RVM black avatar relay: $CLEAN_RTMP -> $OUTPUT_RTMP"
-python rtmp_avatar_stream.py \
+python3 rtmp_avatar_stream.py \
   --variant mobilenetv3 \
   --checkpoint "$CHECKPOINT_PATH" \
   --device "$DEVICE" \
@@ -80,4 +81,10 @@ python rtmp_avatar_stream.py \
   --background-color 0 255 0 \
   --hard-mask-threshold 0.5 \
   --input-resize "$INPUT_RESIZE_W" "$INPUT_RESIZE_H" \
-  --downsample-ratio "$DOWNSAMPLE_RATIO"
+  --input-fps 10 \
+  --input-queue-size 50 \
+  --frame-timeout-seconds 30 \
+  --downsample-ratio "$DOWNSAMPLE_RATIO" \
+  --bitrate-mbps 1 \
+  --process-every-nth-frame 1 \
+  --reconnect-delay-seconds 2

@@ -16,7 +16,7 @@ cd C:\Users\USER\Downloads\mediamtx_v1.18.1_windows_amd64
 while ($true) {
   ffmpeg -fflags +genpts+discardcorrupt -err_detect ignore_err -rtmp_live live `
     -use_wallclock_as_timestamps 1 `
-    -i rtmp://127.0.0.1/live/drone `
+    -i rtmp://127.0.0.1:1935/live/S1DEroIeze `
     -map 0:v:0 -an `
     -c:v libx264 -preset ultrafast -tune zerolatency `
     -profile:v baseline -bf 0 `
@@ -43,8 +43,8 @@ cd C:\Users\USER\Desktop\Hattan\RVM-rtmp-pipeline
   --background-color 255 255 255 `
   --input-resize 640 360 `
   --input-fps 10 `
-  --input-queue-size 1 `
-  --frame-timeout-seconds 8 `
+  --input-queue-size 50 `
+  --frame-timeout-seconds 30 `
   --downsample-ratio 0.2 `
   --bitrate-mbps 1 `
   --process-every-nth-frame 1 `
@@ -64,8 +64,8 @@ cd C:\Users\USER\Desktop\Hattan\RVM-rtmp-pipeline
   --background-color 255 255 255 `
   --input-resize 640 360 `
   --input-fps 10 `
-  --input-queue-size 1 `
-  --frame-timeout-seconds 8 `
+  --input-queue-size 50 `
+  --frame-timeout-seconds 30 `
   --downsample-ratio 0.2 `
   --bitrate-mbps 1 `
   --process-every-nth-frame 1 `
@@ -85,8 +85,8 @@ cd C:\Users\USER\Desktop\Hattan\RVM-rtmp-pipeline
   --silhouette-color 0 0 0 `
   --input-resize 640 360 `
   --input-fps 10 `
-  --input-queue-size 1 `
-  --frame-timeout-seconds 8 `
+  --input-queue-size 50 `
+  --frame-timeout-seconds 30 `
   --downsample-ratio 0.2 `
   --bitrate-mbps 1 `
   --process-every-nth-frame 1 `
@@ -125,10 +125,10 @@ For normal testing, keep all three commands running:
 Then open the Unity menu and select:
 
 - Stream: RAW uses:
-  http://192.168.1.7:8889/drone_raw/whep
+  http://192.168.0.147:8889/drone_raw/whep
 
 - Stream: RVM uses:
-  http://192.168.1.7:8889/rvm/whep
+  http://192.168.0.147:8889/rvm/whep
 
 You do not need to rebuild Unity or stop/restart commands just to switch RAW/RVM.
 
@@ -166,9 +166,9 @@ ffplay -fflags nobuffer -flags low_delay -framedrop -sync ext rtmp://127.0.0.1:1
 
 Browser links on PC:
 
-http://127.0.0.1:8889/drone_raw/
+http://192.168.0.147:8889/drone_raw/
 
-http://127.0.0.1:8889/rvm/
+http://192.168.0.147:8889/rvm/
 
 
 If the Wi-Fi router changes

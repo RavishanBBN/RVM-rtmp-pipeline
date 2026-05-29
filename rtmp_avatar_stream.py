@@ -58,6 +58,15 @@ def parse_args():
                         help="Only run inference on every Nth decoded frame to keep live latency bounded.")
     parser.add_argument("--reconnect-delay-seconds", type=float, default=2.0,
                         help="Seconds to wait before reconnecting after a live stream error.")
+    parser.add_argument(
+        "--ffmpeg-loglevel",
+        type=str,
+        default="fatal",
+        choices=["quiet", "panic", "fatal", "error", "warning", "info", "verbose", "debug", "trace"],
+        help="Log level for child FFmpeg processes.",
+    )
+    parser.add_argument("--print-tracebacks", action="store_true",
+                        help="Print full Python tracebacks for reconnectable stream errors.")
     parser.add_argument("--fp16", action="store_true")
     return parser.parse_args()
 
@@ -104,14 +113,14 @@ def tensor_to_rgb_ndarray(frame_tensor: torch.Tensor) -> np.ndarray:
 
 
 class FfmpegRtmpWriter:
-    def __init__(self, url: str, width: int, height: int, fps: Fraction, bitrate_mbps: float):
+    def __init__(self, url: str, width: int, height: int, fps: Fraction, bitrate_mbps: float, loglevel: str):
         fps_float = fps.numerator / fps.denominator
         gop = max(1, int(round(fps_float)))
         bitrate = f"{bitrate_mbps:g}M"
         command = [
             "ffmpeg",
             "-hide_banner",
-            "-loglevel", "warning",
+            "-loglevel", loglevel,
             "-nostdin",
             "-f", "rawvideo",
             "-pix_fmt", "rgb24",
@@ -162,7 +171,7 @@ class FfmpegRtmpWriter:
 
 
 class FfmpegRawVideoReader:
-    def __init__(self, url: str, width: int, height: int, fps: float, queue_size: int):
+    def __init__(self, url: str, width: int, height: int, fps: float, queue_size: int, loglevel: str):
         self.width = width
         self.height = height
         self.frame_size = width * height * 3
@@ -172,7 +181,7 @@ class FfmpegRawVideoReader:
         command = [
             "ffmpeg",
             "-hide_banner",
-            "-loglevel", "warning",
+            "-loglevel", loglevel,
             "-nostdin",
             "-fflags", "+genpts+discardcorrupt",
             "-flags", "low_delay",
@@ -213,8 +222,7 @@ class FfmpegRawVideoReader:
                 if self.process.poll() is not None:
                     raise RuntimeError(f"ffmpeg input exited with code {self.process.returncode}")
                 data = self._read_exact()
-                frame = np.frombuffer(data, dtype=np.uint8).reshape((self.height, self.width, 3))
-                frame = np.ascontiguousarray(frame)
+                frame = np.frombuffer(data, dtype=np.uint8).reshape((self.height, self.width, 3)).copy()
                 if self.frames.full():
                     try:
                         self.frames.get_nowait()
@@ -335,6 +343,7 @@ def stream_avatar_session(args, model, device, dtype, background_rgb, silhouette
         out_h,
         args.input_fps,
         args.input_queue_size,
+        args.ffmpeg_loglevel,
     )
 
     output_rate = Fraction(
@@ -342,7 +351,7 @@ def stream_avatar_session(args, model, device, dtype, background_rgb, silhouette
         1000 * max(1, args.process_every_nth_frame),
     )
     print(f"[relay] opening ffmpeg output: {args.output_rtmp}", flush=True)
-    output_writer = FfmpegRtmpWriter(args.output_rtmp, out_w, out_h, output_rate, args.bitrate_mbps)
+    output_writer = FfmpegRtmpWriter(args.output_rtmp, out_w, out_h, output_rate, args.bitrate_mbps, args.ffmpeg_loglevel)
     print(f"[relay] streams configured at {out_w}x{out_h}, output ~{output_rate.numerator / output_rate.denominator:.2f} fps", flush=True)
 
     rec = [None] * 4
@@ -455,7 +464,8 @@ def stream_avatar(args):
             raise
         except Exception as exc:
             print(f"[relay] stream error: {exc}. reconnecting in {args.reconnect_delay_seconds:.1f}s", flush=True)
-            print(traceback.format_exc(), flush=True)
+            if args.print_tracebacks:
+                print(traceback.format_exc(), flush=True)
         time.sleep(max(0.25, args.reconnect_delay_seconds))
 
 

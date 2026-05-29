@@ -2,11 +2,11 @@ param(
     [string]$MediaMtxDir = "C:\Users\USER\Downloads\mediamtx_v1.18.1_windows_amd64",
     [string]$MediaMtxExe = "mediamtx.exe",
     [string]$MediaMtxConfig = "mediamtx.yml",
-    [string]$MonaInputUrl = "rtmp://127.0.0.1/live/drone",
+    [string]$MonaInputUrl = "rtmp://127.0.0.1:1935/live/S1DEroIeze",
     [string]$RawOutputUrl = "rtmp://127.0.0.1:1936/drone_raw",
     [string]$RvmOutputUrl = "rtmp://127.0.0.1:1936/rvm",
-    [string]$QuestRvmWhepUrl = "http://192.168.1.7:8889/rvm/whep",
-    [string]$QuestRawWhepUrl = "http://192.168.1.7:8889/drone_raw/whep",
+    [string]$QuestRvmWhepUrl = "http://192.168.0.147:8889/rvm/whep",
+    [string]$QuestRawWhepUrl = "http://192.168.0.147:8889/drone_raw/whep",
     [string]$PythonExe = ".\.venv\Scripts\python.exe",
     [string]$Checkpoint = ".\rvm_mobilenetv3.pth",
     [string]$Variant = "mobilenetv3",
@@ -18,8 +18,8 @@ param(
     [double]$BitrateMbps = 1,
     [int]$ProcessEveryNthFrame = 1,
     [double]$ReconnectDelaySeconds = 2,
-    [double]$FrameTimeoutSeconds = 8,
-    [int]$InputQueueSize = 1
+    [double]$FrameTimeoutSeconds = 30,
+    [int]$InputQueueSize = 50
 )
 
 $ErrorActionPreference = "Stop"
@@ -44,9 +44,11 @@ function Show-Usage {
 function Write-MediaMtxConfig {
     $configPath = Join-Path $MediaMtxDir $MediaMtxConfig
     @"
-rtmpAddress: :1936
-webrtcAdditionalHosts: [127.0.0.1, 192.168.1.7]
-webrtcLocalTCPAddress: :8189
+rtmpAddress: 0.0.0.0:1936
+hlsAddress: 127.0.0.1:8888
+webrtcAddress: 127.0.0.1:8899
+webrtcLocalUDPAddress: 0.0.0.0:8189
+webrtcAdditionalHosts: [127.0.0.1, 192.168.1.54]
 
 paths:
   all_others: {}

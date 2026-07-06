@@ -2,7 +2,7 @@ param(
     [string]$MediaMtxDir = "C:\Users\USER\Downloads\mediamtx_v1.18.1_windows_amd64",
     [string]$MediaMtxExe = "mediamtx.exe",
     [string]$MediaMtxConfig = "mediamtx.yml",
-    [string]$MonaInputUrl = "rtmp://127.0.0.1:1935/live/S1DEroIeze",
+    [string]$MonaInputUrl = "rtmp://127.0.0.1:1935/live/BkcatJWmGl",
     [string]$RawOutputUrl = "rtmp://127.0.0.1:1936/drone_raw",
     [string]$RvmOutputUrl = "rtmp://127.0.0.1:1936/rvm",
     [string]$QuestRvmWhepUrl = "http://192.168.0.147:8889/rvm/whep",

@@ -6,14 +6,14 @@ set -euo pipefail
 #
 # Usage:
 #   bash run_rtmp_black_pipeline.sh
-#   INPUT_RTMP="rtmp://127.0.0.1:1935/live/S1DEroIeze" bash run_rtmp_black_pipeline.sh
+#   INPUT_RTMP="rtmp://127.0.0.1:1935/live/BkcatJWmGl" bash run_rtmp_black_pipeline.sh
 #   INPUT_RTMP="..." OUTPUT_RTMP="rtmp://127.0.0.1:1936/rvm" VIEW_OUTPUT=0 bash run_rtmp_black_pipeline.sh
 
 ROOT_DIR="/Users/homr0001/Documents/DroneProject/RVM-rtmp-pipeline"
 VENV_PATH="$ROOT_DIR/.venv"
 CHECKPOINT_PATH="$ROOT_DIR/rvm_mobilenetv3.pth"
 
-STREAM_KEY="${STREAM_KEY:-S1DEroIeze}"
+STREAM_KEY="${STREAM_KEY:-BkcatJWmGl}"
 INPUT_RTMP="${INPUT_RTMP:-rtmp://127.0.0.1:1935/live/${STREAM_KEY}}"
 CLEAN_RTMP="${CLEAN_RTMP:-rtmp://127.0.0.1:1935/live/${STREAM_KEY}_clean}"
 OUTPUT_RTMP="${OUTPUT_RTMP:-rtmp://127.0.0.1:1936/rvm}"

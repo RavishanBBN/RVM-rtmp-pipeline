@@ -13,20 +13,7 @@ cd C:\Users\USER\Downloads\mediamtx_v1.18.1_windows_amd64
 
 2. Start raw republisher
 
-while ($true) {
-  ffmpeg -fflags +genpts+discardcorrupt -err_detect ignore_err -rtmp_live live `
-    -use_wallclock_as_timestamps 1 `
-    -i rtmp://127.0.0.1:1935/live/S1DEroIeze `
-    -map 0:v:0 -an `
-    -c:v libx264 -preset ultrafast -tune zerolatency `
-    -profile:v baseline -bf 0 `
-    -g 20 -keyint_min 20 -sc_threshold 0 `
-    -pix_fmt yuv420p `
-    -f flv rtmp://127.0.0.1:1936/drone_raw
-
-  Write-Host "raw republisher exited, restarting in 2 seconds..."
-  Start-Sleep -Seconds 2
-}
+        
 
 
 3. Run RVM relay for masked-person view

@@ -55,7 +55,7 @@ bash run_rtmp_black_pipeline.sh
 Custom URLs:
 
 ```bash
-INPUT_RTMP="rtmp://127.0.0.1:1935/live/S1DEroIeze" \
+INPUT_RTMP="rtmp://127.0.0.1:1935/live/BkcatJWmGl" \
 OUTPUT_RTMP="rtmp://127.0.0.1:1936/rvm" \
 bash run_rtmp_black_pipeline.sh
 ```
@@ -67,7 +67,7 @@ bash run_rtmp_black_pipeline.sh
 ```bash
 ffmpeg -fflags +genpts+discardcorrupt -err_detect ignore_err \
   -use_wallclock_as_timestamps 1 \
-  -i "rtmp://127.0.0.1:1935/live/S1DEroIeze" \
+  -i "rtmp://127.0.0.1:1935/live/BkcatJWmGl" \
   -an \
   -c:v libx264 -preset veryfast -tune zerolatency \
   -r 30 -g 60 -keyint_min 60 -sc_threshold 0 \
